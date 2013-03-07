@@ -1,4 +1,4 @@
-package com.aeriksson.androidtest;
+package com.aeriksson.metaballs;
 
 /**
  * Simple implementation of the Marching Cubes algorithm.

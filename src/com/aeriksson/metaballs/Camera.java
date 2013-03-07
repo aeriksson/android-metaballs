@@ -1,4 +1,4 @@
-package com.aeriksson.androidtest;
+package com.aeriksson.metaballs;
 
 import android.opengl.Matrix;
 
