@@ -20,7 +20,7 @@ public class Particles implements Animatable {
 
 	private float[][] parameterVelocities;
 
-	private Random rng = new Random(5);
+	private Random rng = new Random(6);
 
 	Particles() {
 		this(DEFAULT_PARTICLE_COUNT);
