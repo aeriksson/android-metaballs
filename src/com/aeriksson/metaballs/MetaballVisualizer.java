@@ -42,6 +42,10 @@ public class MetaballVisualizer {
 		if (marchingCubesTask == null
 				|| marchingCubesTask.getStatus() == AsyncTask.Status.FINISHED) {
 
+			// copy threshold value to avoid graphical artifacts when it is
+			// changed mid-computation.
+			final float lastThresholdValue = thresholdValue;
+
 			// The metaballs field
 			ScalarField scalarField = new ScalarField() {
 				@Override
@@ -70,7 +74,7 @@ public class MetaballVisualizer {
 						value -= 100;
 					}
 
-					return thresholdValue - value;
+					return lastThresholdValue - value;
 				}
 			};
 
