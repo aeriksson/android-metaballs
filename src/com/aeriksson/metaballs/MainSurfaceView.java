@@ -2,6 +2,7 @@ package com.aeriksson.metaballs;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;
+import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
@@ -9,8 +10,7 @@ import android.view.ScaleGestureDetector;
 import android.view.ScaleGestureDetector.OnScaleGestureListener;
 
 /**
- * Simple GLSurfaceView.
- * Dispatches scroll and scale events to the camera.
+ * Simple GLSurfaceView. Dispatches scroll and scale events to the camera.
  */
 public class MainSurfaceView extends GLSurfaceView implements
 		OnGestureListener, OnScaleGestureListener {
@@ -22,9 +22,8 @@ public class MainSurfaceView extends GLSurfaceView implements
 	GestureDetector gestureDetector;
 	ScaleGestureDetector scaleGestureDetector;
 
-	public MainSurfaceView(Context context) {
-		super(context);
-		
+	public MainSurfaceView(Context context, AttributeSet attributes) {
+		super(context, attributes);
 		setEGLContextClientVersion(2);
 
 		gestureDetector = new GestureDetector(context, this);
@@ -32,7 +31,7 @@ public class MainSurfaceView extends GLSurfaceView implements
 
 		gestureDetector.setIsLongpressEnabled(true);
 	}
-	
+
 	public void setCamera(Camera camera) {
 		this.camera = camera;
 	}
@@ -71,13 +70,13 @@ public class MainSurfaceView extends GLSurfaceView implements
 	@Override
 	public boolean onScroll(MotionEvent e1, MotionEvent e2,
 			final float distanceX, final float distanceY) {
-		
+
 		queueEvent(new Runnable() {
 			public void run() {
 				camera.rotate(distanceX, distanceY);
 			}
 		});
-		
+
 		return true;
 	}
 
@@ -99,7 +98,6 @@ public class MainSurfaceView extends GLSurfaceView implements
 	@Override
 	public void onLongPress(MotionEvent e) {
 	}
-
 
 	@Override
 	public void onShowPress(MotionEvent e) {

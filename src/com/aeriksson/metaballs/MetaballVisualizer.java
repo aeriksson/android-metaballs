@@ -110,6 +110,10 @@ public class MetaballVisualizer {
 		}
 	}
 
+	public void setIsosurfaceThreshold(float thresholdFactor) {
+		thresholdValue = thresholdFactor * 2.0f;
+	}
+
 	/**
 	 * @return The triangles from the last Marching Cubes iteration.
 	 */
@@ -132,7 +136,8 @@ public class MetaballVisualizer {
 			int triangleCount = marchingCubes[0].getTriangleCount();
 			float[] triangles = marchingCubes[0].getTriangles();
 
-			TriangleBuffer triangleBuffer = new TriangleBuffer(10000 * 27, 27);
+			TriangleBuffer triangleBuffer = new TriangleBuffer(
+					triangleCount * 27, 27);
 			triangleBuffer.add(triangles, triangleCount);
 
 			return triangleBuffer;

@@ -95,6 +95,10 @@ public class ParticleRenderer implements Renderable {
 		shaderColorIndex = GLES20.glGetAttribLocation(shader, "color");
 	}
 
+	public void setIsosurfaceThresholdFactor(float thresholdFactor) {
+		metaballVisualizer.setIsosurfaceThreshold(thresholdFactor);
+	}
+
 	@Override
 	public void render(float[] viewMatrix, float[] viewProjectionMatrix) {
 		float[][] particlePositions = particles.getPositions();

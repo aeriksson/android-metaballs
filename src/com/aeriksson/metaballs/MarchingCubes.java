@@ -261,7 +261,7 @@ public class MarchingCubes {
 	/**
 	 * The maximum number of triangles in the resulting mesh.
 	 */
-	private static final int TRIANGLE_CAPACITY = 10000;
+	private static final int TRIANGLE_CAPACITY = 100000;
 
 	/**
 	 * The number of floating point values per vertex. Currently three each for
