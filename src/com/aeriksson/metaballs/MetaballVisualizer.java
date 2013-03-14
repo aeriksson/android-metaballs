@@ -20,8 +20,11 @@ public class MetaballVisualizer {
 	/** Number of elements per side in Marching Cubes. */
 	private final static int ELEMENTS_PER_SIDE = 30;
 
-	/** Buffer containing the output from the last Marching Cubes iteration. */
-	private TriangleBuffer triangleBuffer;
+	/** 
+	 * Buffers for the Marching Cubes output. 
+	 * Double buffering is used to prevent synchronization issues.
+	 */
+	private MeshData frontBuffer, backBuffer;
 
 	private MarchingCubes marchingCubes = new MarchingCubes(CLIPPING_BOX,
 			ELEMENTS_PER_SIDE);
@@ -30,6 +33,7 @@ public class MetaballVisualizer {
 
 	/** Current isosurface threshold value for the metaballs. */
 	private float thresholdValue = DEFAULT_THRESHOLD;
+
 
 	/**
 	 * Updates If Marching Cubes is not running, a new iteration is started.
@@ -119,10 +123,10 @@ public class MetaballVisualizer {
 	}
 
 	/**
-	 * @return The triangles from the last Marching Cubes iteration.
+	 * @return The vertices/normals/ from the last Marching Cubes iteration.
 	 */
-	public TriangleBuffer getTriangleBuffer() {
-		return triangleBuffer;
+	public MeshData getMesh() {
+		return frontBuffer;
 	}
 
 	/**
@@ -130,26 +134,28 @@ public class MetaballVisualizer {
 	 * output.
 	 */
 	class MarchingCubesTask extends
-			AsyncTask<MarchingCubes, Void, TriangleBuffer> {
+			AsyncTask<MarchingCubes, Void, Void> {
 
 		@Override
-		protected TriangleBuffer doInBackground(MarchingCubes... marchingCubes) {
+		protected Void doInBackground(MarchingCubes... marchingCubes) {
 
 			marchingCubes[0].compute();
 
-			int triangleCount = marchingCubes[0].getTriangleCount();
-			float[] triangles = marchingCubes[0].getTriangles();
+			updateMesh(marchingCubes[0]);
 
-			TriangleBuffer triangleBuffer = new TriangleBuffer(
-					triangleCount * 27, 27);
-			triangleBuffer.add(triangles, triangleCount);
-
-			return triangleBuffer;
+			return null;
 		}
-
-		@Override
-		protected void onPostExecute(TriangleBuffer result) {
-			triangleBuffer = result;
+		
+		private void updateMesh(MarchingCubes mc) {
+			
+			int triangleCount = mc.getTriangleCount();
+			float[] vertices = mc.getVertices();
+			float[] normals = mc.getNormals();
+			float[] colors = mc.getColors();
+			
+			backBuffer = new MeshData(triangleCount, vertices, normals, colors);
+			
+			frontBuffer = backBuffer;
 		}
 	}
 }

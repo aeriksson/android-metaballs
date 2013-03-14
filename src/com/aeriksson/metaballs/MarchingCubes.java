@@ -261,17 +261,17 @@ public class MarchingCubes {
 	/**
 	 * The maximum number of triangles in the resulting mesh.
 	 */
-	private static final int TRIANGLE_CAPACITY = 100000;
+	static final int TRIANGLE_CAPACITY = 100000;
 
 	/**
 	 * The number of floating point values per vertex. Currently three each for
 	 * position, normals and color.
 	 */
-	private static final int FLOATS_PER_VERTEX = 9;
-	private static final int FLOATS_PER_TRIANGLE = FLOATS_PER_VERTEX * 3;
+	private static final int FLOATS_PER_VERTEX = 3;
+	static final int FLOATS_PER_TRIANGLE = FLOATS_PER_VERTEX * 3;
 
-	private static final float[] DEFAULT_CLIPPING_BOX = { -2.5f, 2.5f,
-			-2.5f, 2.5f, -2.5f, 2.5f };
+	private static final float[] DEFAULT_CLIPPING_BOX = { -2.5f, 2.5f, -2.5f,
+			2.5f, -2.5f, 2.5f };
 	private static final int DEFAULT_ELEMENTS_PER_SIDE = 20;
 
 	/** Step value for computing partial derivatives of the scalar field */
@@ -328,7 +328,7 @@ public class MarchingCubes {
 	 * 
 	 * TODO: This is retarded. Split it into three separate buffers.
 	 */
-	float[] triangleList;
+	float[] vertices, normals, colors;
 
 	/** Index of the first non-allocated element in triangleList */
 	private int triangleListPosition = 0;
@@ -355,7 +355,9 @@ public class MarchingCubes {
 		int n = elementsPerSide + 1;
 		functionValues = new float[n][n][n];
 		vertexCache = new int[n][n][n][3];
-		triangleList = new float[TRIANGLE_CAPACITY * FLOATS_PER_TRIANGLE];
+		vertices = new float[TRIANGLE_CAPACITY * FLOATS_PER_TRIANGLE];
+		normals = new float[TRIANGLE_CAPACITY * FLOATS_PER_TRIANGLE];
+		colors = new float[TRIANGLE_CAPACITY * FLOATS_PER_TRIANGLE];
 	}
 
 	/** Clears all buffers */
@@ -373,9 +375,9 @@ public class MarchingCubes {
 			}
 		}
 		for (i = 0; i < triangleListPosition; i++) {
-			triangleList[i] = 0;
+			vertices[i] = 0;
 		}
-		
+
 		triangleCount = 0;
 		triangleListPosition = 0;
 	}
@@ -395,8 +397,16 @@ public class MarchingCubes {
 		this.colorField = colorField;
 	}
 
-	public float[] getTriangles() {
-		return triangleList;
+	public float[] getVertices() {
+		return vertices;
+	}
+	
+	public float[] getNormals() {
+		return normals;
+	}
+	
+	public float[] getColors() {
+		return colors;
 	}
 
 	public int getTriangleCount() {
@@ -456,37 +466,37 @@ public class MarchingCubes {
 				setColor(vertexIndex);
 				setCachedFloats(cacheIndices);
 			} else {
-				triangleList[triangleListPosition] = triangleList[floatsIndex];
-				triangleList[triangleListPosition + 1] = triangleList[floatsIndex + 1];
-				triangleList[triangleListPosition + 2] = triangleList[floatsIndex + 2];
-				triangleList[triangleListPosition + 3] = triangleList[floatsIndex + 3];
-				triangleList[triangleListPosition + 4] = triangleList[floatsIndex + 4];
-				triangleList[triangleListPosition + 5] = triangleList[floatsIndex + 5];
-				triangleList[triangleListPosition + 6] = triangleList[floatsIndex + 6];
-				triangleList[triangleListPosition + 7] = triangleList[floatsIndex + 7];
-				triangleList[triangleListPosition + 8] = triangleList[floatsIndex + 8];
+				vertices[triangleListPosition] = vertices[floatsIndex];
+				vertices[triangleListPosition + 1] = vertices[floatsIndex + 1];
+				vertices[triangleListPosition + 2] = vertices[floatsIndex + 2];
+				normals[triangleListPosition] = normals[floatsIndex];
+				normals[triangleListPosition + 1] = normals[floatsIndex + 1];
+				normals[triangleListPosition + 2] = normals[floatsIndex + 2];
+				colors[triangleListPosition] = colors[floatsIndex];
+				colors[triangleListPosition + 1] = colors[floatsIndex + 1];
+				colors[triangleListPosition + 2] = colors[floatsIndex + 2];
 			}
-			triangleListPosition += 9;
+			triangleListPosition += 3;
 			triangleCount++;
 		}
 	}
 
 	private void setNormal(int vertexIndex) {
-		float[] normal = computeGradientDirection(triangleList[vertexIndex],
-				triangleList[vertexIndex + 1], triangleList[vertexIndex + 2]);
+		float[] normal = computeGradientDirection(vertices[vertexIndex],
+				vertices[vertexIndex + 1], vertices[vertexIndex + 2]);
 
-		triangleList[vertexIndex + 3] = normal[0];
-		triangleList[vertexIndex + 4] = normal[1];
-		triangleList[vertexIndex + 5] = normal[2];
+		normals[vertexIndex + 0] = normal[0];
+		normals[vertexIndex + 1] = normal[1];
+		normals[vertexIndex + 2] = normal[2];
 	}
 
 	private void setColor(int vertexIndex) {
-		float[] color = colorField.evaluate(triangleList[vertexIndex],
-				triangleList[vertexIndex + 1], triangleList[vertexIndex + 2]);
+		float[] color = colorField.evaluate(vertices[vertexIndex],
+				vertices[vertexIndex + 1], vertices[vertexIndex + 2]);
 
-		triangleList[vertexIndex + 6] = color[0];
-		triangleList[vertexIndex + 7] = color[1];
-		triangleList[vertexIndex + 8] = color[2];
+		colors[vertexIndex + 0] = color[0];
+		colors[vertexIndex + 1] = color[1];
+		colors[vertexIndex + 2] = color[2];
 	}
 
 	private int setVertex(int x, int y, int z, int edgeIndex) {
@@ -588,9 +598,9 @@ public class MarchingCubes {
 			break;
 		}
 
-		triangleList[triangleListPosition] = v0;
-		triangleList[triangleListPosition + 1] = v1;
-		triangleList[triangleListPosition + 2] = v2;
+		vertices[triangleListPosition] = v0;
+		vertices[triangleListPosition + 1] = v1;
+		vertices[triangleListPosition + 2] = v2;
 
 		return triangleListPosition;
 	}

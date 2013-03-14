@@ -45,18 +45,12 @@ public class ParticleRenderer implements Renderable {
 			+ "}                                                                                 \n";
 
 	/**
-	 * Constants used to describe how the vertices are interlaced in the
-	 * triangle buffer.
+	 * Constants used to describe to the shader how the triangles are stored.
 	 */
-	private final static int POSITION_OFFSET = 0;
-	private final static int POSITION_SIZE = 3;
-	private final static int NORMAL_OFFSET = POSITION_SIZE;
+	private final static int VERTEX_SIZE = 3;
 	private final static int NORMAL_SIZE = 3;
-	private final static int COLOR_OFFSET = NORMAL_OFFSET + NORMAL_SIZE;
 	private final static int COLOR_SIZE = 3;
 	private final static int BYTES_PER_FLOAT = 4;
-	private final static int STRIDE_BYTES = (POSITION_SIZE + NORMAL_SIZE + COLOR_SIZE)
-			* BYTES_PER_FLOAT;
 
 	/** Shader program handle */
 	private int shader = -1;
@@ -105,8 +99,7 @@ public class ParticleRenderer implements Renderable {
 		metaballVisualizer.update(particlePositions);
 
 		// The shader has to be instantiated in the correct thread; i.e. here
-		// and
-		// not in the constructor.
+		// and not in the constructor.
 		if (shader == -1) {
 			initShader();
 		}
@@ -116,36 +109,38 @@ public class ParticleRenderer implements Renderable {
 
 	private void renderTriangles(float[] viewMatrix,
 			float[] viewProjectionMatrix) {
-		TriangleBuffer triangles = metaballVisualizer.getTriangleBuffer();
 
-		if (triangles == null || triangles.getTriangleCount() == 0) {
+		MeshData mesh = metaballVisualizer.getMesh();
+
+		if (mesh == null) {
 			return;
 		}
+
+		FloatBuffer vertices = mesh.getVertices();
+		FloatBuffer normals = mesh.getNormals();
+		FloatBuffer colors = mesh.getColors();
+		int triangleCount = mesh.getTriangleCount();
 
 		GLES20.glUniformMatrix4fv(shaderMVPMatrixIndex, 1, false,
 				viewProjectionMatrix, 0);
 		GLES20.glUniformMatrix4fv(shaderMVMatrixIndex, 1, false, viewMatrix, 0);
 		GLES20.glUniform3fv(shaderLightPositionIndex, 1, LIGHT_POSITION, 0);
 
-		FloatBuffer buffer = triangles.getFloatBuffer();
-
-		int triangleCount = triangles.getTriangleCount();
-
-		buffer.position(POSITION_OFFSET);
-		GLES20.glVertexAttribPointer(shaderPositionIndex, POSITION_SIZE,
-				GLES20.GL_FLOAT, false, STRIDE_BYTES, buffer);
+		vertices.position(0);
+		GLES20.glVertexAttribPointer(shaderPositionIndex, VERTEX_SIZE,
+				GLES20.GL_FLOAT, false, VERTEX_SIZE * BYTES_PER_FLOAT, vertices);
 		GLES20.glEnableVertexAttribArray(shaderPositionIndex);
 
-		buffer.position(NORMAL_OFFSET);
+		normals.position(0);
 		GLES20.glVertexAttribPointer(shaderNormalIndex, NORMAL_SIZE,
-				GLES20.GL_FLOAT, false, STRIDE_BYTES, buffer);
+				GLES20.GL_FLOAT, false, NORMAL_SIZE * BYTES_PER_FLOAT, normals);
 		GLES20.glEnableVertexAttribArray(shaderNormalIndex);
 
-		buffer.position(COLOR_OFFSET);
+		colors.position(0);
 		GLES20.glVertexAttribPointer(shaderColorIndex, COLOR_SIZE,
-				GLES20.GL_FLOAT, false, STRIDE_BYTES, buffer);
+				GLES20.GL_FLOAT, false, COLOR_SIZE * BYTES_PER_FLOAT, colors);
 		GLES20.glEnableVertexAttribArray(shaderColorIndex);
 
-		GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 3 * triangleCount);
+		GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, triangleCount);
 	}
 }
