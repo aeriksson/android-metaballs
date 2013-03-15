@@ -96,7 +96,8 @@ public class ParticleRenderer implements Renderable {
 	@Override
 	public void render(float[] viewMatrix, float[] viewProjectionMatrix) {
 		float[][] particlePositions = particles.getPositions();
-		metaballVisualizer.update(particlePositions);
+		metaballVisualizer.setParticlePositions(particlePositions);
+		metaballVisualizer.update();
 
 		// The shader has to be instantiated in the correct thread; i.e. here
 		// and not in the constructor.
